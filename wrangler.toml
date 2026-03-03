@@ -1,3 +1,31 @@
 name = "sub-converter"
 main = "worker.js"
 compatibility_date = "2026-02-28"
+
+[vars]
+BACKEND = "https://api.wcc.best"
+BACKEND_NAME = "sub-web作者提供-稳定"
+
+BACKEND1 = "https://sub.xeton.dev"
+BACKEND1_NAME = "subconverter作者提供-稳定"
+
+BACKEND2 = "https://sub.id9.cc"
+BACKEND2_NAME = "品云提供"
+
+BACKEND3 = "https://bianyuan.xyz"
+BACKEND3_NAME = "边缘提供"
+
+BACKEND4 = "https://api.nexconvert.com"
+BACKEND4_NAME = "奶昔提供"
+
+BACKEND5 = "https://api.dler.io"
+BACKEND5_NAME = "lhie1提供"
+
+BACKEND6 = "https://sub.maoxiongnet.com"
+BACKEND6_NAME = "猫熊提供"
+
+BACKEND7 = "https://api.sublink.dev"
+BACKEND7_NAME = "歪兔提供"
+
+BACKEND8 = "https://sub.xjz.im"
+BACKEND8_NAME = "920.im提供"
