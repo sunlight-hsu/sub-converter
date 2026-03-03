@@ -2918,9 +2918,19 @@ var src_default = {
   async fetch(request, env) {
     const url = new URL(request.url);
     const host = url.origin;
-    const frontendUrl = 'https://raw.githubusercontent.com/bulianglin/psub/main/frontend.html';
+    const frontendUrl = 'https://raw.githubusercontent.com/sunlight-hsu/sub-converter/main/frontend.html';
     const SUB_BUCKET = env.SUB_BUCKET;
     let backend = env.BACKEND.replace(/(https?:\/\/[^/]+).*$/, "$1");
+
+    // NEW: 读取 b 参数切换后端
+    const bId = url.searchParams.get("b");
+    if (bId) {
+      const envKey = `BACKEND${bId}`;
+      if (env[envKey]) {
+        backend = env[envKey].replace(/(https?:\/\/[^/]+).*$/, "$1");
+      }
+    }
+
     const subDir = "subscription";
     const pathSegments = url.pathname.split("/").filter((segment) => segment.length > 0);
     if (pathSegments.length === 0) {
@@ -2929,7 +2939,27 @@ var src_default = {
         return new Response('Failed to fetch frontend', { status: response.status });
       }
       const originalHtml = await response.text();
-      const modifiedHtml = originalHtml.replace(/https:\/\/bulianglin2023\.dev/, host);
+      let modifiedHtml = originalHtml.replace(/https:\/\/bulianglin2023\.dev/, host);
+
+      // NEW: 动态提取所有 BACKEND 和 BACKEND_NAME 并注入前端
+      const backends = [];
+      if (env.BACKEND) {
+        backends.push({ id: '', url: env.BACKEND, name: env.BACKEND_NAME || env.BACKEND });
+      }
+      for (let i = 1; i <= 50; i++) {
+        const bKey = `BACKEND${i}`;
+        const nKey = `BACKEND${i}_NAME`;
+        if (env[bKey]) {
+          backends.push({ id: i.toString(), url: env[bKey], name: env[nKey] || env[bKey] });
+        }
+      }
+      const backendScript = `<script>window.BACKEND_LIST = ${JSON.stringify(backends)};</script>`;
+      if (modifiedHtml.includes('</head>')) {
+        modifiedHtml = modifiedHtml.replace('</head>', backendScript + '</head>');
+      } else {
+        modifiedHtml = backendScript + modifiedHtml;
+      }
+
       return new Response(modifiedHtml, {
         status: 200,
         headers: {
@@ -3024,6 +3054,7 @@ var src_default = {
     }
     const newUrl = replacedURIs.join("|");
     url.searchParams.set("url", newUrl);
+    url.searchParams.delete("b"); // NEW: 清除追加的参数避免污染转发给后端的请求
     const modifiedRequest = new Request(backend + url.pathname + url.search, request);
     const rpResponse = await fetch(modifiedRequest);
     for (const key of keys) {
